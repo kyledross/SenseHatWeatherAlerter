@@ -97,6 +97,7 @@ def get_alert_color(severity, urgency):
 
 
 if __name__ == "__main__":
+    print(f"Program started at: {datetime.datetime.now()}")
     sense = SenseHat()
     sense.low_light = True
     sense.rotation = 90
