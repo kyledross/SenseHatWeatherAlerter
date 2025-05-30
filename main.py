@@ -43,6 +43,7 @@ def process_alerts():
         state, city = file.read().strip().split('\n')
     url: str = f"http://rpi02w.local:8080/weather-alert/{state}/{city}"
     weather_alert = get_weather_alert(url)
+    sense.clear()
     if weather_alert:
         if weather_alert.event:
             alert_color = get_alert_color(weather_alert.severity, weather_alert.urgency)
