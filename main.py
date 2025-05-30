@@ -1,5 +1,6 @@
 import datetime
 from time import sleep
+import os.path
 
 from sense_hat import SenseHat
 import requests
@@ -37,8 +38,9 @@ def main():
 
 
 def process_alerts():
-    state: str = "ga"
-    city: str = "temple"
+    config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config.txt')
+    with open(config_path, 'r') as file:
+        state, city = file.read().strip().split('\n')
     url: str = f"http://rpi02w.local:8080/weather-alert/{state}/{city}"
     weather_alert = get_weather_alert(url)
     if weather_alert:
