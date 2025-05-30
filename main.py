@@ -42,12 +42,10 @@ def process_alerts():
     url: str = f"http://rpi02w.local:8080/weather-alert/{state}/{city}"
     weather_alert = get_weather_alert(url)
     if weather_alert:
-        print(weather_alert)
         if weather_alert.event:
             alert_color = get_alert_color(weather_alert.severity, weather_alert.urgency)
             sense.show_message(weather_alert.event, text_colour=alert_color)
             sense.show_letter(persistent_message, text_colour=alert_color)
-            print(weather_alert)
         else:
             pass
 
