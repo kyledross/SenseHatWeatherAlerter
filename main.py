@@ -96,9 +96,9 @@ class Alerter:
 if __name__ == "__main__":
     config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config.txt')
     with open(config_path, 'r') as file:
-        state, city, display_type = file.read().strip().split('\n')
+        state, city = file.read().strip().split('\n')
     alerter = Alerter(f"http://rpi02w.local:8080/weather-alert/{state}/{city}",
-                      DisplayFactory.create_display(DisplayType(display_type)))
+                      DisplayFactory.create_display_automatically())
     alerter.run()
 
 

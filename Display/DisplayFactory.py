@@ -16,3 +16,16 @@ class DisplayFactory:
             return SenseHatDisplay()
         else:
             raise ValueError(f"Unsupported display type: {display_type}")
+
+    @staticmethod
+    def create_display_automatically() -> IDisplay:
+        try:
+            display = DisplayFactory.create_display(DisplayType.SENSE_HAT)
+            return display
+        except OSError:
+            pass
+        try:
+            display = DisplayFactory.create_display(DisplayType.ADAFRUIT_213_EINK)
+            return display
+        except OSError:
+            raise ValueError("No supported display found")
