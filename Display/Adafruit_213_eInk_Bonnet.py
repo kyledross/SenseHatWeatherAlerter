@@ -1,3 +1,4 @@
+from abc import ABC
 import board
 import busio
 import digitalio
@@ -6,7 +7,7 @@ from adafruit_epd.epd import Adafruit_EPD
 from Display.IDisplay import IDisplay
 
 # SD1680 version, not 1680Z
-class Adafruit213eInkBonnet(IDisplay):
+class Adafruit213eInkBonnet(IDisplay, ABC):
     def __init__(self):
 
         spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
@@ -44,7 +45,7 @@ class Adafruit213eInkBonnet(IDisplay):
             lines.append(' '.join(current_line))
         return lines
 
-    def displayMessage(self, title: str, message: str, detail: str = ""):
+    def display_message(self, title: str, message: str = "", detail: str = "", color=None):
         self.clearScreen()
         self.display.text(title, 10, 10, Adafruit_EPD.BLACK, size=3)
         self.display.text(message, 10, 40, Adafruit_EPD.BLACK, size=2)
