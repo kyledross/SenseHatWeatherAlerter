@@ -4,6 +4,7 @@ from Display.IDisplay import IDisplay
 class DisplayType(Enum):
     ADAFRUIT_213_EINK = "adafruit_213_eink"
     SENSE_HAT = "sense_hat"
+    CONSOLE = "console"
 
 class DisplayFactory:
     @staticmethod
@@ -14,6 +15,9 @@ class DisplayFactory:
         elif display_type == DisplayType.SENSE_HAT:
             from Display.SenseHatDisplay import SenseHatDisplay
             return SenseHatDisplay()
+        elif display_type == DisplayType.CONSOLE:
+            from Display.ConsoleDisplay import ConsoleDisplay
+            return ConsoleDisplay()
         else:
             raise ValueError(f"Unsupported display type: {display_type}")
 
@@ -22,10 +26,15 @@ class DisplayFactory:
         try:
             display = DisplayFactory.create_display(DisplayType.SENSE_HAT)
             return display
-        except OSError:
+        except Exception:
             pass
         try:
             display = DisplayFactory.create_display(DisplayType.ADAFRUIT_213_EINK)
             return display
-        except OSError:
+        except Exception:
+            pass
+        try:
+            display = DisplayFactory.create_display(DisplayType.CONSOLE)
+            return display
+        except Exception:
             raise ValueError("No supported display found")
