@@ -28,7 +28,8 @@ class Adafruit213eInkBonnet(IDisplay, ABC):
     def detail(self, detail: str):
         pass
 
-    def _wrap_text(self, text: str, width: int) -> list:
+    @staticmethod
+    def wrap_text(text: str, width: int) -> list:
         words = text.split()
         lines = []
         current_line = []
@@ -52,7 +53,7 @@ class Adafruit213eInkBonnet(IDisplay, ABC):
         self.clear_display()
         # self.display.text(title, 10, 10, Adafruit_EPD.BLACK, size=3, font_name=self.font_path)
         # Calculate lines needed for detail text with word wrapping
-        lines = self._wrap_text(title, 13)
+        lines = self.wrap_text(title, 13)
         for i, line in enumerate(lines):
             self.display.text(line, 3, 0 + (i * 24), Adafruit_EPD.BLACK, size=3, font_name=self.font_path)
         self.display.display()

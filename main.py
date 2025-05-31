@@ -1,11 +1,14 @@
 import datetime
-from time import sleep
 import os.path
-import requests
 from dataclasses import dataclass
+from time import sleep
 from typing import Optional
-from Display.DisplayFactory import DisplayFactory, DisplayType
+
+import requests
+
+from Display.DisplayFactory import DisplayFactory
 from Display.IDisplay import IDisplay
+
 
 @dataclass
 class WeatherAlert:
