@@ -1,10 +1,20 @@
 from abc import ABC
 from Display.IDisplay import IDisplay
-from sense_hat import SenseHat
 
 class SenseHatDisplay(IDisplay, ABC):
-    sense:SenseHat = None
+    sense = None
     def __init__(self):
+        try:
+            # noinspection PyUnresolvedReferences
+            from sense_hat import SenseHat
+        except Exception:
+            # SenseHat not found
+            pass
+        try:
+            # noinspection PyUnresolvedReferences
+            from sense_emu import SenseHat
+        except Exception:
+            raise ValueError("No SenseHat or SenseHat Emu found")
         self.sense = SenseHat()
         self.sense.low_light = True
         self.sense.rotation = 90
