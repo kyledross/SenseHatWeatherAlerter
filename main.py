@@ -32,13 +32,25 @@ class Alerter:
     display:IDisplay = None
     api_url:str = ""
 
-    def __init__(self, url: str, display: IDisplay):
+    def __init__(self, display: IDisplay):
         self.display: IDisplay = display
-        self.api_url: str = url
+        self.state:str = ""
+        self.city:str = ""
+        self.last_config: str = ""
 
     def run(self):
         next_check: datetime = datetime.datetime.now()
         while True:
+            config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config.txt')
+            with open(config_path, 'r') as file:
+                read = file.read()
+                self.state, self.city = read.strip().split('\n')
+                if read != self.last_config:
+                    self.display.display_message(f"Monitoring {self.city}, {self.state}")
+                    self.display.clear_display()
+                    self.last_config = read
+                self.api_url = f"http://rpi02w.local:8080/weather-alert/{self.state}/{self.city}"
+                file.close()
             while datetime.datetime.now() <= next_check:
                 sleep(5)
             self.process_alerts()
@@ -97,12 +109,5 @@ class Alerter:
 
 
 if __name__ == "__main__":
-    config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config.txt')
-    with open(config_path, 'r') as file:
-        state, city = file.read().strip().split('\n')
-    alerter = Alerter(f"http://rpi02w.local:8080/weather-alert/{state}/{city}",
-                      DisplayFactory.create_display_automatically())
+    alerter = Alerter(DisplayFactory.create_display_automatically())
     alerter.run()
-
-
-
