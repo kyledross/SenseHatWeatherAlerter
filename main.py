@@ -1,5 +1,6 @@
 import datetime
 import os.path
+import threading
 from dataclasses import dataclass
 from time import sleep
 from typing import Optional
@@ -32,13 +33,24 @@ class Alerter:
     display:IDisplay = None
     api_url:str = ""
 
+    def is_storm_active(self) -> bool:
+        if self.last_storm_callback is None:
+            return False
+        time_diff = datetime.datetime.now() - self.last_storm_callback
+        return time_diff.total_seconds() < (self.local_storm_time_to_live_minutes * 60)
+
+    last_storm_callback: datetime.datetime = None
+    local_storm_time_to_live_minutes: int = 30
+
     def __init__(self, display: IDisplay):
         self.display: IDisplay = display
         self.state:str = ""
         self.city:str = ""
         self.last_config: str = ""
+        self.storm_detector = None
 
     def run(self):
+        self._start_storm_detector()      
         next_check: datetime = datetime.datetime.now()
         while True:
             config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config.txt')
@@ -60,12 +72,21 @@ class Alerter:
     def process_alerts(self):
         weather_alert = self.get_weather_alert()
         self.display.clear_display()
-        if weather_alert:
-            if weather_alert.event:
-                alert_color = self.get_alert_color(weather_alert.severity, weather_alert.urgency)
-                self.display.display_message(title=weather_alert.event, color=alert_color)
+
+        if weather_alert or self.is_storm_active():
+            alert_title = ""
+            alert_color = self.get_alert_color(weather_alert.severity, weather_alert.urgency)
+            if self.is_storm_active() and alert_color != [255, 0, 0]:
+                # a local storm has been detected, and there is not a current warning from the national weather service
+                # so preempt any nws message and alert about the detected storm, instead
+                alert_title = "Nearby Storm Detected"
+                alert_color = [255, 0, 255]  # magenta
+                self.recheck_seconds = 60
+            elif weather_alert.event:
+                alert_title = weather_alert.event
             else:
                 pass
+            self.display.display_message(title=alert_title, color=alert_color)
 
     def get_weather_alert(self) -> Optional[WeatherAlert]:
         try:
@@ -84,28 +105,40 @@ class Alerter:
             return None
 
 
+    def storm_detected_callback(self, message: str):
+        self.last_storm_callback = datetime.datetime.now()
+
+    def _start_storm_detector(self):
+        from Detection.StormDetector import StormDetector
+        self.storm_detector = StormDetector(storm_detected_callback=self.storm_detected_callback)
+        detector_thread = threading.Thread(target=self.storm_detector.run, daemon=True)
+        detector_thread.start()
+
+
     def get_alert_color(self,severity, urgency):
-        self.recheck_seconds = 300 # five minutes
-        severity = severity.lower()
-        urgency = urgency.lower()
-        if severity == "extreme":  # red
-            self.recheck_seconds = 15
-            return [255, 0, 0]
-        elif severity == "severe":
-            if urgency == "immediate" or urgency == "expected":  # red
+            if severity is None or urgency is None:
+                return [255,255,255]
+            self.recheck_seconds = 300 # five minutes
+            severity = severity.lower()
+            urgency = urgency.lower()
+            if severity == "extreme":  # red
                 self.recheck_seconds = 15
                 return [255, 0, 0]
-            else:
-                self.recheck_seconds = 60
-                return [255, 255, 0]  # yellow
-        elif severity == "moderate":  # yellow
-            return [255, 255, 0]
-        elif severity == "minor":  # white
-            return [0, 255, 0]
-        elif urgency == "immediate":  # red
-            self.recheck_seconds = 15
-            return [255, 0, 0]
-        return [255,255,255]
+            elif severity == "severe":
+                if urgency == "immediate" or urgency == "expected":  # red
+                    self.recheck_seconds = 15
+                    return [255, 0, 0]
+                else:
+                    self.recheck_seconds = 60
+                    return [255, 255, 0]  # yellow
+            elif severity == "moderate":  # yellow
+                return [255, 255, 0]
+            elif severity == "minor":  # white
+                return [0, 255, 0]
+            elif urgency == "immediate":  # red
+                self.recheck_seconds = 15
+                return [255, 0, 0]
+            return [255,255,255]
 
 
 if __name__ == "__main__":
