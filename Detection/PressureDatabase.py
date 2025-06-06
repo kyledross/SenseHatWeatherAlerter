@@ -5,7 +5,7 @@ from typing import List, Tuple
 
 class PressureDatabase:
     """
-    A class to manage a SQLite database for storing pressure readings in millibars
+    A class to manage an SQLite database for storing pressure readings in millibars
     with timestamps.
     """
 
@@ -77,17 +77,42 @@ class PressureDatabase:
         conn.close()
         return results
 
+    def get_readings_last_three_hours(self) -> List[Tuple[int, datetime.datetime]]:
+        """
+        Get all pressure readings from the last three hours.
+
+        Returns:
+            List of tuples containing (pressure, timestamp)
+        """
+        conn = sqlite3.connect(self.db_path)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+
+        three_hours_ago = datetime.datetime.now() - datetime.timedelta(hours=3)
+
+        cursor.execute(
+            "SELECT pressure, timestamp FROM pressure_readings WHERE timestamp >= ? ORDER BY timestamp",
+            (three_hours_ago.strftime("%Y-%m-%d %H:%M:%S"),)
+        )
+
+        results = [(row['pressure'], datetime.datetime.strptime(row['timestamp'], "%Y-%m-%d %H:%M:%S"))
+                   for row in cursor.fetchall()]
+
+        conn.close()
+        return results
+
+
     def delete_old_readings(self):
         """Delete all readings older than 5 hours."""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
-        
+
         five_hours_ago = datetime.datetime.now() - datetime.timedelta(hours=5)
-        
+
         cursor.execute(
             "DELETE FROM pressure_readings WHERE timestamp < ?",
             (five_hours_ago.strftime("%Y-%m-%d %H:%M:%S"),)
         )
-        
+
         conn.commit()
         conn.close()

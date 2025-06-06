@@ -6,7 +6,8 @@ from Detection.PressureDatabase import PressureDatabase
 
 class StormDetector:
     # Pressure drop threshold in millibars that indicates a potential storm
-    PRESSURE_DROP_THRESHOLD = 3
+    THREE_HOUR_PRESSURE_DROP_THRESHOLD = 3
+    ONE_HOUR_PRESSURE_DROP_THRESHOLD = 2
     # Minimum number of readings required before we can detect a storm
     MIN_READINGS_REQUIRED = 3
 
@@ -62,24 +63,29 @@ class StormDetector:
         Check for storm conditions based on pressure readings from the last hour.
         A rapid drop in pressure can indicate an approaching storm.
         """
-        readings = self._db.get_readings_last_hour()
+        last_hour_readings = self._db.get_readings_last_hour()
+        last_three_hour_readings = self._db.get_readings_last_three_hours()
 
         # Need at least a few readings to detect a trend
-        if len(readings) < self.MIN_READINGS_REQUIRED:
+        if len(last_hour_readings) < self.MIN_READINGS_REQUIRED:
             return
 
         # Sort readings by timestamp (oldest first)
-        readings.sort(key=lambda x: x[1])
+        last_hour_readings.sort(key=lambda x: x[1])
+        last_three_hour_readings.sort(key=lambda x: x[1])
 
         # Check if there's been a significant drop in pressure
-        oldest_reading = readings[0][0]
-        newest_reading = readings[-1][0]
+        one_hour_oldest_reading = last_hour_readings[0][0]
+        three_hour_oldest_reading = last_three_hour_readings[0][0]
+        newest_reading = last_hour_readings[-1][0]
 
-        pressure_change = newest_reading - oldest_reading
+        one_hour_pressure_change = newest_reading - one_hour_oldest_reading
+        three_hour_pressure_change = newest_reading - three_hour_oldest_reading
 
         # A significant drop in pressure may indicate a storm
-        if pressure_change <= -self.PRESSURE_DROP_THRESHOLD:
-            self.notify_storm(pressure_change)
+        if (one_hour_pressure_change <= -self.ONE_HOUR_PRESSURE_DROP_THRESHOLD
+                or three_hour_pressure_change <= -self.THREE_HOUR_PRESSURE_DROP_THRESHOLD):
+            self.notify_storm(one_hour_pressure_change)
 
     def notify_storm(self, pressure_drop=None):
         """
