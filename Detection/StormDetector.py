@@ -22,6 +22,7 @@ class StormDetector:
         self._db = PressureDatabase(db_path)
         self._sense_hat = None
         self._initialize_sense_hat()
+        self._last_pressure: int = 0
 
     def _initialize_sense_hat(self):
         """Initialize the Sense HAT or its emulator."""
@@ -83,9 +84,10 @@ class StormDetector:
         three_hour_pressure_change = newest_reading - three_hour_oldest_reading
 
         # A significant drop in pressure may indicate a storm
-        if (one_hour_pressure_change <= -self.ONE_HOUR_PRESSURE_DROP_THRESHOLD
-                or three_hour_pressure_change <= -self.THREE_HOUR_PRESSURE_DROP_THRESHOLD):
-            self.notify_storm(one_hour_pressure_change)
+        if newest_reading < self._last_pressure: # only alert if pressure keeps dropping
+            if one_hour_pressure_change <= -self.ONE_HOUR_PRESSURE_DROP_THRESHOLD:
+                self.notify_storm(one_hour_pressure_change)
+        self._last_pressure = newest_reading
 
     def notify_storm(self, pressure_drop=None):
         """
