@@ -74,13 +74,14 @@ class Alerter:
         self.display.clear_display()
         if weather_alert or self.is_storm_active():
             alert_title = ""
-            alert_color = [255, 0, 255]  # magenta as the default
+            alert_color = [255, 255, 255]
             if weather_alert:
                 alert_color = self.get_alert_color(weather_alert.severity, weather_alert.urgency)
             if self.is_storm_active() and alert_color != [255, 0, 0]:
                 # a local storm has been detected, and there is not a current warning from the national weather service
                 # so preempt any nws message and alert about the detected storm, instead
                 alert_title = "Nearby Storm Detected"
+                alert_color = [255, 0, 255]
                 self.recheck_seconds = 60
             elif weather_alert.event:
                 alert_title = weather_alert.event
