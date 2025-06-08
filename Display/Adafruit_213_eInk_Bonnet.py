@@ -52,12 +52,15 @@ class Adafruit213eInkBonnet(IDisplay, ABC):
     def display_message(self, title: str, message: str = "", detail: str = "", color=None):
         # self.display.text(title, 10, 10, Adafruit_EPD.BLACK, size=3, font_name=self.font_path)
         # Calculate lines needed for detail text with word wrapping
-        self.clear_display()
-        lines = self.wrap_text(title, 13)
-        for i, line in enumerate(lines):
-            self.display.text(line, 3, 0 + (i * 24), Adafruit_EPD.BLACK, size=3, font_name=self.font_path)
-        self.display.display()
-        self.display_is_clear = False
+        if title:
+            self.clear_display()
+            lines = self.wrap_text(title, 13)
+            for i, line in enumerate(lines):
+                self.display.text(line, 3, 0 + (i * 24), Adafruit_EPD.BLACK, size=3, font_name=self.font_path)
+            self.display.display()
+            self.display_is_clear = False
+        elif not title:
+            self.clear_display()
         pass
 
     def clear_display(self):
