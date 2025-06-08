@@ -70,12 +70,4 @@ class Adafruit213eInkBonnet(IDisplay, ABC):
         self.display.display()
         self.display_is_clear = True
         pass
-    
-    def heartbeat(self):
-        if self.heartbeat_count == 0:
-            current_time = datetime.now().strftime("%Y-%m-%d %I:%M %p")
-            self.display_message(f"Monitoring at {current_time}")
-        self.heartbeat_count += 1
-        if self.heartbeat_count >= 4:
-            self.heartbeat_count = 0
 
