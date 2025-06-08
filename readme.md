@@ -18,9 +18,14 @@ This is a Python program intended to run on a Raspberry Pi to display weather al
 Raspberry Pi  
 Raspberry Pi OS  
 Raspberry Pi SenseHat, or  
+Raspberry Pi SenseHat Emulator, or  
 Adafruit 2.13" eInk Bonnet
 
-(Yes, the project is named Sense Hat Weather Alerter.  Yes it supports both a SenseHat and an eInk Bonnet.  You got the bonus plan.)
+(Yes, the project is named Sense Hat Weather Alerter. Yes, it supports both a SenseHat and an eInk Bonnet. You got the bonus plan.)  
+
+The program will try to locate a SenseHat.  If it can't find one, it will try to locate a SenseHat Emnulator.  If it can't find that, it will attempt to find an Adafruit 2.13" eInk Bonnet.  And, at last, if that fails, it will display an error.  The display code is extensible, so add your favorite display method.
+
+### What It Does
 
 The program will periodically retrieve any active weather alerts from the API and display them on the attached display.  
 
@@ -61,6 +66,7 @@ sudo apt install sense-hat
 ```
 
 ### Adafruit 2.13" eInk Bonnet
+_Note: There are a few different versions of this bonnet.  Please consult the pages for your device for any changes below._
 #### Install CircuitPython  
 ``` bash
 cd ~  
