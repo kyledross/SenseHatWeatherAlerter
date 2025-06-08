@@ -31,7 +31,7 @@ class StormDetector:
             from sense_hat import SenseHat
             self._sense_hat = SenseHat()
             return True
-        except ImportError:
+        except Exception:
             try:
                 # Fall back to the emulator if the real one isn't available
                 from sense_emu import SenseHat
