@@ -8,3 +8,7 @@ class IDisplay(ABC):
     @abstractmethod
     def clear_display(self):
         pass
+
+    @abstractmethod
+    def heartbeat(self):
+        pass

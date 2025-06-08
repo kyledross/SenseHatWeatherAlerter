@@ -1,4 +1,6 @@
 from abc import ABC
+from time import sleep
+
 from Display.IDisplay import IDisplay
 
 class SenseHatDisplay(IDisplay, ABC):
@@ -18,6 +20,7 @@ class SenseHatDisplay(IDisplay, ABC):
                 from sense_emu import SenseHat
             except Exception:
                 raise ValueError("No SenseHat or SenseHat Emu found")
+        # noinspection PyUnboundLocalVariable
         self.sense = SenseHat()
         self.sense.low_light = True
         self.sense.rotation = 90
@@ -39,3 +42,8 @@ class SenseHatDisplay(IDisplay, ABC):
     def clear_display(self):
         self.sense.clear()
 
+
+    def heartbeat(self):
+        self.sense.set_pixel(7,7,0,255,0)
+        sleep(.1)
+        self.sense.set_pixel(7,7,0,0,0)

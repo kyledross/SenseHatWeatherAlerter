@@ -53,6 +53,9 @@ class Alerter:
         self._start_storm_detector()      
         next_check: datetime = datetime.datetime.now()
         while True:
+            while datetime.datetime.now() <= next_check:
+                sleep(15)
+                self.display.heartbeat()
             config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config.txt')
             with open(config_path, 'r') as file:
                 read = file.read()
@@ -63,8 +66,6 @@ class Alerter:
                     self.last_config = read
                 self.api_url = f"http://rpi02w.local:8080/weather-alert/{self.state}/{self.city}"
                 file.close()
-            while datetime.datetime.now() <= next_check:
-                sleep(5)
             self.process_alerts()
             next_check = datetime.datetime.now() + datetime.timedelta(seconds=self.recheck_seconds)
 
@@ -106,11 +107,12 @@ class Alerter:
             return None
 
 
-    def storm_detected_callback(self, message: str):
+    def storm_detected_callback(self):
         self.last_storm_callback = datetime.datetime.now()
 
     def _start_storm_detector(self):
         from Detection.StormDetector import StormDetector
+        # todo - add code to check if a SenseHat is detected.  If it is not, don't start the storm detector.
         self.storm_detector = StormDetector(storm_detected_callback=self.storm_detected_callback)
         detector_thread = threading.Thread(target=self.storm_detector.run, daemon=True)
         detector_thread.start()
