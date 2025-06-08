@@ -72,8 +72,10 @@ class Adafruit213eInkBonnet(IDisplay, ABC):
         pass
     
     def heartbeat(self):
-        self.heartbeat_count += 1
-        if self.heartbeat_count == 4:
+        if self.heartbeat_count == 0:
             current_time = datetime.now().strftime("%Y-%m-%d %I:%M %p")
             self.display_message(f"Monitoring at {current_time}")
+        self.heartbeat_count += 1
+        if self.heartbeat_count >= 4:
             self.heartbeat_count = 0
+
