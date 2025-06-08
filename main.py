@@ -104,6 +104,7 @@ class Alerter:
             return WeatherAlert(**data)
         except (requests.RequestException, ValueError) as e:
             print(f"Error fetching weather alert: {e}")
+            self.display.display_message("Error getting weather data. Retrying in 30 seconds.")
             self.recheck_seconds = 30
             return None
 

@@ -55,7 +55,7 @@ class Adafruit213eInkBonnet(IDisplay, ABC):
         if title:
             self.clear_display()
             lines = self.wrap_text(title, 13)
-            for i, line in enumerate(lines):
+            for i, line in enumerate(lines[:4]):
                 self.display.text(line, 3, 0 + (i * 24), Adafruit_EPD.BLACK, size=3, font_name=self.font_path)
             self.display.display()
             self.display_is_clear = False
