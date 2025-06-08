@@ -1,3 +1,28 @@
+# SenseHat Weather Alerter
+
+### Important
+
+This code is intended for educational and demonstration purposes only.
+It must not be used in life- or property-threatening situations.
+Always use a reliable source for weather information, such as a weather radio,
+local radio, or local television.
+
+_**Use this code at your own risk.**_  
+
+### Purpose
+
+This is a Python program intended to run on a Raspberry Pi to display weather alerts from the WeatherBox API (see [https://github.com/kyledross/WeatherBox](https://github.com/kyledross/WeatherBox)).  
+
+### Requirements  
+
+Raspberry Pi  
+Raspberry Pi SenseHat or Adafruit 2.13" eInk Bonnet
+
+The program will periodically retrieve any active weather alerts from the API and display them on the attached display.  
+
+In addition to weather alerts, if a Raspberry Pi SenseHat is attached, the air pressure is also tracked, and an alert about a nearby storm will be displayed, as appropriate.  
+
+
 ## Config file
 
 The config file is a simple text file named config.txt.  It consists of three lines.  They are, in order:  
