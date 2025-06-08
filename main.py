@@ -54,8 +54,9 @@ class Alerter:
         next_check: datetime = datetime.datetime.now()
         while True:
             while datetime.datetime.now() <= next_check:
-                sleep(15)
                 self.display.heartbeat()
+                sleep(15)
+
             config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config.txt')
             with open(config_path, 'r') as file:
                 read = file.read()

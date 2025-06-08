@@ -71,3 +71,6 @@ class Adafruit213eInkBonnet(IDisplay, ABC):
         self.display_is_clear = True
         pass
 
+    def heartbeat(self):
+        pass
+
