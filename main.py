@@ -146,5 +146,10 @@ class Alerter:
 
 
 if __name__ == "__main__":
-    alerter = Alerter(DisplayFactory.create_display_automatically())
-    alerter.run()
+    display = DisplayFactory.create_display_automatically()
+    try:
+        alerter = Alerter(display)
+        alerter.run()
+    except Exception as e:
+        display.display_message(str(e))
+        raise
