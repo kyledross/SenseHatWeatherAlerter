@@ -25,10 +25,8 @@ class Adafruit213eInkBonnet(IDisplay, ABC):
                                         rst_pin=rst, busy_pin=busy)
         self.display.rotation = 3
         self.heartbeat_count:int = 0
-        
-
-    def detail(self, detail: str):
-        pass
+        self.display_is_clear:bool = False
+        self.clear_display()
 
     @staticmethod
     def wrap_text(text: str, width: int) -> list:
@@ -54,15 +52,20 @@ class Adafruit213eInkBonnet(IDisplay, ABC):
     def display_message(self, title: str, message: str = "", detail: str = "", color=None):
         # self.display.text(title, 10, 10, Adafruit_EPD.BLACK, size=3, font_name=self.font_path)
         # Calculate lines needed for detail text with word wrapping
+        self.clear_display()
         lines = self.wrap_text(title, 13)
         for i, line in enumerate(lines):
             self.display.text(line, 3, 0 + (i * 24), Adafruit_EPD.BLACK, size=3, font_name=self.font_path)
         self.display.display()
+        self.display_is_clear = False
         pass
 
     def clear_display(self):
+        if self.display_is_clear:
+            return
         self.display.fill(Adafruit_EPD.WHITE)
         self.display.display()
+        self.display_is_clear = True
         pass
     
     def heartbeat(self):
