@@ -46,6 +46,7 @@ class Alerter:
         self.display: IDisplay = display
         self.state:str = ""
         self.city:str = ""
+        self.weather_box_server: str = ""
         self.last_config: str = ""
         self.storm_detector = None
 
@@ -60,12 +61,12 @@ class Alerter:
             config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config.txt')
             with open(config_path, 'r') as file:
                 read = file.read()
-                self.state, self.city = read.strip().split('\n')
+                self.weather_box_server, self.state, self.city = read.strip().split('\n')
                 if read != self.last_config:
                     self.display.display_message(f"Monitoring {self.city}, {self.state}")
                     self.display.clear_display()
                     self.last_config = read
-                self.api_url = f"http://rpi02w.local:8080/weather-alert/{self.state}/{self.city}" # todo: put this in a config file
+                self.api_url = f"{self.weather_box_server}/weather-alert/{self.state}/{self.city}"
                 file.close()
             self.process_alerts()
             next_check = datetime.datetime.now() + datetime.timedelta(seconds=self.recheck_seconds)
@@ -93,7 +94,7 @@ class Alerter:
     def get_weather_alert(self) -> Optional[WeatherAlert]:
         try:
             if self.first_api_request:
-                self.display.display_message("Connecting...")
+                self.display.display_message("Connecting")
             response = requests.get(self.api_url)
             response.raise_for_status()
             if self.first_api_request:
@@ -113,7 +114,6 @@ class Alerter:
 
     def _start_storm_detector(self):
         from Detection.StormDetector import StormDetector
-        # todo - add code to check if a SenseHat is detected.  If it is not, don't start the storm detector.
         self.storm_detector = StormDetector(storm_detected_callback=self.storm_detected_callback)
         if self.storm_detector.sense_hat_present():
             detector_thread = threading.Thread(target=self.storm_detector.run, daemon=True)
