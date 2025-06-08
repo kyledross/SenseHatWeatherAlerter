@@ -3,6 +3,7 @@ import board
 import busio
 import digitalio
 import os.path
+from datetime import datetime
 from adafruit_epd.epd import Adafruit_EPD
 
 from Display.IDisplay import IDisplay
@@ -23,6 +24,7 @@ class Adafruit213eInkBonnet(IDisplay, ABC):
         self.display = Adafruit_SSD1680(122, 250, spi, cs_pin=ecs, dc_pin=dc, sramcs_pin=None,
                                         rst_pin=rst, busy_pin=busy)
         self.display.rotation = 3
+        self.heartbeat_count:int = 0
         
 
     def detail(self, detail: str):
@@ -63,3 +65,10 @@ class Adafruit213eInkBonnet(IDisplay, ABC):
         self.display.fill(Adafruit_EPD.WHITE)
         self.display.display()
         pass
+    
+    def heartbeat(self):
+        self.heartbeat_count += 1
+        if self.heartbeat_count == 4:
+            current_time = datetime.now().strftime("%Y-%m-%d %I:%M %p")
+            self.display_message(f"Monitoring at {current_time}")
+            self.heartbeat_count = 0

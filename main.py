@@ -64,7 +64,7 @@ class Alerter:
                     self.display.display_message(f"Monitoring {self.city}, {self.state}")
                     self.display.clear_display()
                     self.last_config = read
-                self.api_url = f"http://rpi02w.local:8080/weather-alert/{self.state}/{self.city}"
+                self.api_url = f"http://rpi02w.local:8080/weather-alert/{self.state}/{self.city}" # todo: put this in a config file
                 file.close()
             self.process_alerts()
             next_check = datetime.datetime.now() + datetime.timedelta(seconds=self.recheck_seconds)
@@ -114,8 +114,9 @@ class Alerter:
         from Detection.StormDetector import StormDetector
         # todo - add code to check if a SenseHat is detected.  If it is not, don't start the storm detector.
         self.storm_detector = StormDetector(storm_detected_callback=self.storm_detected_callback)
-        detector_thread = threading.Thread(target=self.storm_detector.run, daemon=True)
-        detector_thread.start()
+        if self.storm_detector.sense_hat_present():
+            detector_thread = threading.Thread(target=self.storm_detector.run, daemon=True)
+            detector_thread.start()
 
 
     def get_alert_color(self,severity, urgency):

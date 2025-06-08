@@ -21,29 +21,35 @@ class StormDetector:
         self._storm_detected_callback = storm_detected_callback
         self._db = PressureDatabase(db_path)
         self._sense_hat = None
-        self._initialize_sense_hat()
+        self._sense_hat_present: bool = self._initialize_sense_hat()
         self._last_pressure: int = 0
 
-    def _initialize_sense_hat(self):
+    def _initialize_sense_hat(self) -> bool:
         """Initialize the Sense HAT or its emulator."""
         try:
             # Try to import the real Sense HAT library first
             from sense_hat import SenseHat
             self._sense_hat = SenseHat()
+            return True
         except ImportError:
             try:
                 # Fall back to the emulator if the real one isn't available
                 from sense_emu import SenseHat
                 self._sense_hat = SenseHat()
-            except ImportError:
-                raise ValueError("Neither SenseHat nor SenseHat emulator found")
+                return True
+            except Exception:
+                return False
+
+    def sense_hat_present(self) -> bool:
+        """Return True if the Sense HAT is detected, False otherwise."""
+        return self._sense_hat_present
 
     def run(self):
         """
         Main loop that reads pressure data, stores it in the database,
         and checks for storm conditions.
         """
-        while True:
+        while self._sense_hat_present:
             # Read current pressure from the Sense HAT
             current_pressure = int(self._sense_hat.get_pressure())
 
