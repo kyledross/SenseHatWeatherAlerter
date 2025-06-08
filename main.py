@@ -73,7 +73,6 @@ class Alerter:
 
     def process_alerts(self):
         weather_alert = self.get_weather_alert()
-        self.display.clear_display()
         if weather_alert or self.is_storm_active():
             alert_title = ""
             alert_color = [255, 255, 255]
