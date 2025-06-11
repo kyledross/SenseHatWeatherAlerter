@@ -67,3 +67,12 @@ Then, run:
 ```bash
 ./.venv/bin/python3 main.py
 ```
+
+To schedule the alerter to start at boot:  
+1. Change directory into where the program is located
+2. Run ```pwd``` to get the absolute path to the program.
+3. Run ```crontab -e```
+4. Create this line, substituting the path from step 1 where appropriate:
+```@reboot /home/yourusername/SenseHatWeatherAlerter/.venv/bin/python3 /home/yourusername/SenseHatWeatherAlerter/main.py```
+5. Save and exit
+6. Reboot
