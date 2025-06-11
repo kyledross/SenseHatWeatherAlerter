@@ -55,38 +55,15 @@ or
 `Shelby County  `
 
 
-
-## Supported Displays  
-
-### Raspberry Pi SenseHat  
-
-#### Install SenseHat support 
-``` bash
-sudo apt install sense-hat
+## Quick Start
+To get all requirements installed automatically, change directory into where the source was cloned, and run  
+```bash
+chmod +x ./install_prerequisites.py
+./install_prerequisites
 ```
-
-### Adafruit 2.13" eInk Bonnet
-_Note: There are a few different versions of this bonnet.  Please consult the pages for your device for any changes below._
-#### Install CircuitPython  
-``` bash
-cd ~  
-sudo apt install python3-venv  
-python3 -m venv env --system-site-packages  
-source env/bin/activate  
-pip3 install adafruit-circuitpython-epd  
-pip3 install Pillow
-```
-#### Install Blinka
-``` bash
-cd ~  
-pip3 install --upgrade adafruit-python-shell  
-wget https://raw.githubusercontent.com/adafruit/Raspberry-Pi-Installer-Scripts/master/raspi-blinka.py  
-sudo -E env PATH=$PATH python3 raspi-blinka.py  
-```
-#### Disable SPI Chip Enable Lines
-``` bash
-cd ~  
-pip3 install --upgrade adafruit-python-shell click  
-wget https://raw.githubusercontent.com/adafruit/Raspberry-Pi-Installer-Scripts/main/raspi-spi-reassign.py  
-sudo -E env PATH=$PATH python3 raspi-spi-reassign.py --ce0=disabled --ce1=disabled  
+After pre-requisites are installed, reboot.
+Once the system is back running, change directory to the source and make appropriate changes to config.txt.
+Then, run:
+```bash
+./.venv/bin/python3 main.py
 ```
