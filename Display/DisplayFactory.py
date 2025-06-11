@@ -27,17 +27,17 @@ class DisplayFactory:
             display = DisplayFactory.create_display(DisplayType.SENSE_HAT)
             return display
         except Exception as e:
-            print(f"Error creating SenseHatDisplay: {e}")
+            #print(f"Error creating SenseHatDisplay: {e}")
             pass
         try:
             display = DisplayFactory.create_display(DisplayType.ADAFRUIT_213_EINK)
             return display
         except Exception as e:
-            print(f"Error creating Adafruit213eInkBonnet: {e}")
+            #print(f"Error creating Adafruit213eInkBonnet: {e}")
             pass
         try:
             display = DisplayFactory.create_display(DisplayType.CONSOLE)
             return display
         except Exception as e:
-            print(f"Error creating ConsoleDisplay: {e}")
+            #print(f"Error creating ConsoleDisplay: {e}")
             raise ValueError("No supported display found")
