@@ -12,7 +12,7 @@ sudo apt install python3-dev build-essential -y
 
 # Create virtual environment -----------------------
 sudo apt install python3-venv -y
-python -m venv .venv
+python -m venv --system-site-packages .venv
 source .venv/bin/activate
 
 # Install requirements -----------------------------
