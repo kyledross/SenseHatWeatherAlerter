@@ -8,3 +8,5 @@ class ConsoleDisplay(IDisplay):
         pass
     def clear_display(self):
         pass
+    def heartbeat(self):
+        pass

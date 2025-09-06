@@ -11,7 +11,8 @@ class SenseHatDisplay(IDisplay, ABC):
             # noinspection PyUnresolvedReferences
             from sense_hat import SenseHat
             self.sense_hat_found = True
-        except Exception:
+        except Exception as e:
+            print(f"Error creating SenseHatDisplay: {e}")
             # SenseHat not found
             pass
         if not self.sense_hat_found:
