@@ -33,7 +33,7 @@ class SenseHatDisplay(IDisplay, ABC):
         if color is None:
             color = [255, 255, 255]
         if title:
-            self.sense.show_message(title, scroll_speed=0.05, text_colour=color)
+            self.sense.show_message(". . . " + title, scroll_speed=0.05, text_colour=color)
             self.sense.show_letter(".", text_colour=color)
         else:
             self.sense.clear()
