@@ -101,6 +101,12 @@ class Alerter:
                 self.display.display_message("Connected")
                 self.first_api_request = False
             data = response.json()
+            
+            # Ignore alerts with "UNKNOWN" severity
+            if data.get('severity', '').upper() == 'UNKNOWN':
+                print(f"Ignoring alert with UNKNOWN severity: {data.get('event', 'N/A')}")
+                return None
+                
             return WeatherAlert(**data)
         except (requests.RequestException, ValueError) as e:
             print(f"Error fetching weather alert: {e}")
