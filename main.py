@@ -85,11 +85,14 @@ class Alerter:
                 alert_title = "Nearby Storm Detected"
                 alert_color = [255, 0, 255]
                 self.recheck_seconds = 60
-            elif weather_alert.event:
+            elif weather_alert and weather_alert.event:
                 alert_title = weather_alert.event
             else:
                 pass
             self.display.display_message(title=alert_title, color=alert_color)
+        else:
+            # No valid weather alert and no storm active, clear the display
+            self.display.clear_display()
 
     def get_weather_alert(self) -> Optional[WeatherAlert]:
         try:
