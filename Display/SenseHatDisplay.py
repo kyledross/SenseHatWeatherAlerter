@@ -31,11 +31,14 @@ class SenseHatDisplay(IDisplay, ABC):
         # The SenseHat, being a scrolling display, will only display the title.
         # It will then leave a full-stop on the display to let the user know that
         # there is an active alert.
+        show_full_stop = True
         if color is None:
             color = [255, 255, 255]
+            show_full_stop = False
         if title:
             self.sense.show_message(". . . " + title, scroll_speed=0.05, text_colour=color)
-            self.sense.show_letter(".", text_colour=color)
+            if show_full_stop:
+                self.sense.show_letter(".", text_colour=color)
         else:
             self.sense.clear()
         pass
