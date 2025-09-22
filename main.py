@@ -106,7 +106,7 @@ class Alerter:
             data = response.json()
             
             # Ignore alerts with "UNKNOWN" severity
-            if data.get('severity', '').upper() == 'UNKNOWN':
+            if (data.get('severity') or '').upper() == 'UNKNOWN':
                 print(f"Ignoring alert with UNKNOWN severity: {data.get('event', 'N/A')}")
                 return None
                 
