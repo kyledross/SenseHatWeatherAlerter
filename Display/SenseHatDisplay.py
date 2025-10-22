@@ -1,5 +1,7 @@
 from abc import ABC
+import threading
 from time import sleep
+from typing import Callable, Optional
 
 from Display.IDisplay import IDisplay
 
@@ -7,6 +9,10 @@ class SenseHatDisplay(IDisplay, ABC):
     sense = None
     def __init__(self):
         self.sense_hat_found: bool = False
+        self.button_callback: Optional[Callable[[], None]] = None
+        self.button_monitor_thread: Optional[threading.Thread] = None
+        self.stop_monitor = threading.Event()
+        
         try:
             # noinspection PyUnresolvedReferences
             from sense_hat import SenseHat
@@ -51,3 +57,23 @@ class SenseHatDisplay(IDisplay, ABC):
         self.sense.set_pixel(7,7,0,255,0)
         sleep(.1)
         self.sense.set_pixel(7,7,0,0,0)
+
+    def set_button_press_callback(self, callback: Optional[Callable[[], None]]):
+        """Set callback to be called when the middle joystick button is pressed."""
+        self.button_callback = callback
+        if callback and not self.button_monitor_thread:
+            self.button_monitor_thread = threading.Thread(target=self._monitor_joystick, daemon=True)
+            self.button_monitor_thread.start()
+
+    def _monitor_joystick(self):
+        """Monitor the joystick middle button press in a background thread."""
+        while not self.stop_monitor.is_set():
+            try:
+                for event in self.sense.stick.get_events():
+                    if event.action == "pressed" and event.direction == "middle":
+                        if self.button_callback:
+                            self.button_callback()
+                sleep(0.1)
+            except Exception as e:
+                print(f"Error monitoring joystick: {e}")
+                sleep(1)

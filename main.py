@@ -32,6 +32,8 @@ class Alerter:
     first_api_request:bool = True
     display:IDisplay = None
     api_url:str = ""
+    check_now_event: threading.Event = None
+    on_demand_check_requested: bool = False
 
     def is_storm_active(self) -> bool:
         if self.last_storm_callback is None:
@@ -49,14 +51,19 @@ class Alerter:
         self.weather_box_server: str = ""
         self.last_config: str = ""
         self.storm_detector = None
+        self.check_now_event = threading.Event()
+        self.on_demand_check_requested = False
+        self.display.set_button_press_callback(self._on_button_pressed)
 
     def run(self):
         self._start_storm_detector()      
         next_check: datetime = datetime.datetime.now()
         while True:
             while datetime.datetime.now() <= next_check:
+                if self.check_now_event.wait(timeout=15):
+                    self.check_now_event.clear()
+                    break
                 self.display.heartbeat()
-                sleep(15)
 
             config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config.txt')
             with open(config_path, 'r') as file:
@@ -90,9 +97,14 @@ class Alerter:
             else:
                 pass
             self.display.display_message(title=alert_title, color=alert_color)
+            self.on_demand_check_requested = False
         else:
-            # No valid weather alert and no storm active, clear the display
-            self.display.clear_display()
+            # No valid weather alert and no storm active
+            if self.on_demand_check_requested:
+                self.display.display_message("No updates")
+                self.on_demand_check_requested = False
+            else:
+                self.display.clear_display()
 
     def get_weather_alert(self) -> Optional[WeatherAlert]:
         try:
@@ -120,6 +132,11 @@ class Alerter:
 
     def storm_detected_callback(self):
         self.last_storm_callback = datetime.datetime.now()
+
+    def _on_button_pressed(self):
+        """Callback for when the display button is pressed."""
+        self.on_demand_check_requested = True
+        self.check_now_event.set()
 
     def _start_storm_detector(self):
         from Detection.StormDetector import StormDetector
