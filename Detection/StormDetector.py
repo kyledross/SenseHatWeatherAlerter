@@ -85,6 +85,9 @@ class StormDetector:
         # Need at least a few readings to detect a trend
         if len(last_hour_readings) < self.MIN_READINGS_REQUIRED:
             return
+        
+        if len(last_three_hour_readings) < self.MIN_READINGS_REQUIRED:
+            return
 
         # Sort readings by timestamp (oldest first)
         last_hour_readings.sort(key=lambda x: x[1])
