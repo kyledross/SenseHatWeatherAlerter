@@ -87,6 +87,7 @@ class Alerter:
 
     def process_alerts(self):
         weather_alert = self.get_weather_alert()
+        self.logger.info(f"process_alerts: weather_alert={weather_alert is not None}, storm_active={self.is_storm_active()}, on_demand={self.on_demand_check_requested}")
         if weather_alert or self.is_storm_active():
             alert_title = ""
             alert_color = [255, 255, 255]
@@ -107,7 +108,8 @@ class Alerter:
         else:
             # No valid weather alert and no storm active
             if self.on_demand_check_requested:
-                self.display.display_message("No updates")
+                self.logger.info("Displaying 'No current alerts' message for on-demand check")
+                self.display.display_message("No current alerts")
                 self.on_demand_check_requested = False
             else:
                 self.display.clear_display()
@@ -122,6 +124,11 @@ class Alerter:
                 self.display.display_message("Connected")
                 self.first_api_request = False
             data = response.json()
+            
+            # Return None if no alert event is present
+            if not data.get('event'):
+                self.logger.info("No active weather alerts")
+                return None
             
             # Ignore alerts with "UNKNOWN" severity
             if (data.get('severity') or '').upper() == 'UNKNOWN':
@@ -141,6 +148,7 @@ class Alerter:
 
     def _on_button_pressed(self):
         """Callback for when the display button is pressed."""
+        self.logger.info("Button pressed - triggering on-demand check")
         self.on_demand_check_requested = True
         self.check_now_event.set()
 
