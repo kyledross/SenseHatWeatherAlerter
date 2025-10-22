@@ -1,4 +1,3 @@
-from abc import ABC
 import board
 import busio
 import digitalio
@@ -9,7 +8,7 @@ from adafruit_epd.epd import Adafruit_EPD
 from Display.IDisplay import IDisplay
 
 # SD1680 version, not 1680Z
-class Adafruit213eInkBonnet(IDisplay, ABC):
+class Adafruit213eInkBonnet(IDisplay):
     def __init__(self):
         spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
         ecs = digitalio.DigitalInOut(board.CE0)
@@ -61,7 +60,6 @@ class Adafruit213eInkBonnet(IDisplay, ABC):
             self.display_is_clear = False
         elif not title:
             self.clear_display()
-        pass
 
     def clear_display(self):
         if self.display_is_clear:
@@ -69,7 +67,6 @@ class Adafruit213eInkBonnet(IDisplay, ABC):
         self.display.fill(Adafruit_EPD.WHITE)
         self.display.display()
         self.display_is_clear = True
-        pass
 
     def heartbeat(self):
         pass

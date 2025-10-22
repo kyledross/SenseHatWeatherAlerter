@@ -93,6 +93,8 @@ class StormDetector:
         if newest_reading < self._last_pressure: # only alert if pressure keeps dropping
             if one_hour_pressure_change <= -self.ONE_HOUR_PRESSURE_DROP_THRESHOLD:
                 self.notify_storm(one_hour_pressure_change)
+            elif three_hour_pressure_change <= -self.THREE_HOUR_PRESSURE_DROP_THRESHOLD:
+                self.notify_storm(three_hour_pressure_change)
         self._last_pressure = newest_reading
 
     def notify_storm(self, pressure_drop=None):

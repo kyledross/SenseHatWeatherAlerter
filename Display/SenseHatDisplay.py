@@ -1,11 +1,10 @@
-from abc import ABC
 import threading
 from time import sleep
 from typing import Callable, Optional
 
 from Display.IDisplay import IDisplay
 
-class SenseHatDisplay(IDisplay, ABC):
+class SenseHatDisplay(IDisplay):
     sense = None
     def __init__(self):
         self.sense_hat_found: bool = False
@@ -47,7 +46,6 @@ class SenseHatDisplay(IDisplay, ABC):
                 self.sense.show_letter(".", text_colour=color)
         else:
             self.sense.clear()
-        pass
 
     def clear_display(self):
         self.sense.clear()

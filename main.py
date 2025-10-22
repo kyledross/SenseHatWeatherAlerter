@@ -131,7 +131,7 @@ class Alerter:
             return None
 
 
-    def storm_detected_callback(self):
+    def storm_detected_callback(self, message: str):
         self.last_storm_callback = datetime.datetime.now()
 
     def _on_button_pressed(self):

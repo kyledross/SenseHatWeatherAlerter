@@ -28,13 +28,11 @@ class DisplayFactory:
             return display
         except Exception as e:
             print(f"Error creating SenseHatDisplay: {e}")
-            pass
         try:
             display = DisplayFactory.create_display(DisplayType.ADAFRUIT_213_EINK)
             return display
         except Exception as e:
             print(f"Error creating Adafruit213eInkBonnet: {e}")
-            pass
         try:
             display = DisplayFactory.create_display(DisplayType.CONSOLE)
             return display
