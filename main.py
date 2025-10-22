@@ -1,5 +1,6 @@
 import datetime
 import logging
+from logging.handlers import RotatingFileHandler
 import os.path
 import sys
 import threading
@@ -186,17 +187,25 @@ class Alerter:
 
 
 def setup_logging():
-    """Configure logging to file and console."""
+    """Configure logging to file and console with rotation."""
     log_dir = os.path.dirname(os.path.abspath(__file__))
     log_file = os.path.join(log_dir, 'weather_alerter.log')
+    
+    # Rotate log file when it reaches 5MB, keep 3 backup files (max ~20MB total)
+    file_handler = RotatingFileHandler(
+        log_file,
+        maxBytes=5*1024*1024,  # 5 MB
+        backupCount=3
+    )
+    file_handler.setLevel(logging.INFO)
+    
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler.setLevel(logging.INFO)
     
     logging.basicConfig(
         level=logging.INFO,
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        handlers=[
-            logging.FileHandler(log_file, mode='a'),
-            logging.StreamHandler(sys.stdout)
-        ]
+        handlers=[file_handler, console_handler]
     )
     
     logger = logging.getLogger(__name__)

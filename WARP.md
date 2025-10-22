@@ -140,7 +140,7 @@ CREATE TABLE pressure_readings (
 
 ## Logging
 
-The application logs all events, errors, and debug information to `weather_alerter.log` in the project directory. This file is created automatically on first run and appends new log entries on each execution.
+The application logs all events, errors, and debug information to `weather_alerter.log` in the project directory. The log file automatically rotates when it reaches 5MB, keeping up to 3 backup files (maximum ~20MB total storage).
 
 **Log Levels:**
 - **INFO**: Normal operations (startup, display initialization, configuration changes)
@@ -148,7 +148,9 @@ The application logs all events, errors, and debug information to `weather_alert
 - **ERROR**: Recoverable errors (API failures, sensor read errors)
 - **CRITICAL**: Fatal errors that cause application shutdown
 
-**Log File Location:** `weather_alerter.log` in the project root directory
+**Log Files:**
+- `weather_alerter.log` - Current log file
+- `weather_alerter.log.1`, `.2`, `.3` - Rotated backup files (when applicable)
 
 **Viewing Recent Logs:**
 ```bash
