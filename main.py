@@ -62,6 +62,7 @@ class Alerter:
             while datetime.datetime.now() <= next_check:
                 if self.check_now_event.wait(timeout=15):
                     self.check_now_event.clear()
+                    self.display.display_message("Checking")
                     break
                 self.display.heartbeat()
 
