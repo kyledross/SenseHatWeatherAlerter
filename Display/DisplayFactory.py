@@ -1,3 +1,4 @@
+import logging
 from enum import Enum
 from Display.IDisplay import IDisplay
 
@@ -23,19 +24,20 @@ class DisplayFactory:
 
     @staticmethod
     def create_display_automatically() -> IDisplay:
+        logger = logging.getLogger(__name__)
         try:
             display = DisplayFactory.create_display(DisplayType.SENSE_HAT)
             return display
         except Exception as e:
-            print(f"Error creating SenseHatDisplay: {e}")
+            logger.info(f"SenseHatDisplay not available: {e}")
         try:
             display = DisplayFactory.create_display(DisplayType.ADAFRUIT_213_EINK)
             return display
         except Exception as e:
-            print(f"Error creating Adafruit213eInkBonnet: {e}")
+            logger.info(f"Adafruit213eInkBonnet not available: {e}")
         try:
             display = DisplayFactory.create_display(DisplayType.CONSOLE)
             return display
         except Exception as e:
-            print(f"Error creating ConsoleDisplay: {e}")
+            logger.error(f"Error creating ConsoleDisplay: {e}", exc_info=True)
             raise ValueError("No supported display found")

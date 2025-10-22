@@ -138,6 +138,30 @@ CREATE TABLE pressure_readings (
 );
 ```
 
+## Logging
+
+The application logs all events, errors, and debug information to `weather_alerter.log` in the project directory. This file is created automatically on first run and appends new log entries on each execution.
+
+**Log Levels:**
+- **INFO**: Normal operations (startup, display initialization, configuration changes)
+- **WARNING**: Storm detections and non-critical issues
+- **ERROR**: Recoverable errors (API failures, sensor read errors)
+- **CRITICAL**: Fatal errors that cause application shutdown
+
+**Log File Location:** `weather_alerter.log` in the project root directory
+
+**Viewing Recent Logs:**
+```bash
+# View last 50 lines
+tail -n 50 weather_alerter.log
+
+# Follow log in real-time
+tail -f weather_alerter.log
+
+# Search for errors
+grep -i error weather_alerter.log
+```
+
 ## Troubleshooting
 
 ### SenseHat Connection Issues

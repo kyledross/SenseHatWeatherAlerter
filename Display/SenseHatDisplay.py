@@ -1,3 +1,4 @@
+import logging
 import threading
 from time import sleep
 from typing import Callable, Optional
@@ -7,6 +8,7 @@ from Display.IDisplay import IDisplay
 class SenseHatDisplay(IDisplay):
     sense = None
     def __init__(self):
+        self.logger = logging.getLogger(__name__)
         self.sense_hat_found: bool = False
         self.button_callback: Optional[Callable[[], None]] = None
         self.button_monitor_thread: Optional[threading.Thread] = None
@@ -17,9 +19,7 @@ class SenseHatDisplay(IDisplay):
             from sense_hat import SenseHat
             self.sense_hat_found = True
         except Exception as e:
-            print(f"Error creating SenseHatDisplay: {e}")
-            # SenseHat not found
-            pass
+            self.logger.debug(f"SenseHat hardware not found: {e}")
         if not self.sense_hat_found:
             try:
                 # noinspection PyUnresolvedReferences
@@ -73,5 +73,5 @@ class SenseHatDisplay(IDisplay):
                             self.button_callback()
                 sleep(0.1)
             except Exception as e:
-                print(f"Error monitoring joystick: {e}")
+                self.logger.error(f"Error monitoring joystick: {e}", exc_info=True)
                 sleep(1)

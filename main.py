@@ -1,6 +1,9 @@
 import datetime
+import logging
 import os.path
+import sys
 import threading
+import traceback
 from dataclasses import dataclass
 from time import sleep
 from typing import Optional
@@ -54,6 +57,7 @@ class Alerter:
         self.check_now_event = threading.Event()
         self.on_demand_check_requested = False
         self.display.set_button_press_callback(self._on_button_pressed)
+        self.logger = logging.getLogger(__name__)
 
     def run(self):
         self._start_storm_detector()      
@@ -120,12 +124,12 @@ class Alerter:
             
             # Ignore alerts with "UNKNOWN" severity
             if (data.get('severity') or '').upper() == 'UNKNOWN':
-                print(f"Ignoring alert with UNKNOWN severity: {data.get('event', 'N/A')}")
+                self.logger.info(f"Ignoring alert with UNKNOWN severity: {data.get('event', 'N/A')}")
                 return None
                 
             return WeatherAlert(**data)
         except (requests.RequestException, ValueError) as e:
-            print(f"Error fetching weather alert: {e}")
+            self.logger.error(f"Error fetching weather alert: {e}", exc_info=True)
             self.display.display_message("Error getting weather data. Retrying in 30 seconds.")
             self.recheck_seconds = 30
             return None
@@ -143,8 +147,16 @@ class Alerter:
         from Detection.StormDetector import StormDetector
         self.storm_detector = StormDetector(storm_detected_callback=self.storm_detected_callback)
         if self.storm_detector.sense_hat_present():
-            detector_thread = threading.Thread(target=self.storm_detector.run, daemon=True)
+            detector_thread = threading.Thread(target=self._run_storm_detector_with_logging, daemon=True)
             detector_thread.start()
+
+    def _run_storm_detector_with_logging(self):
+        """Wrapper to catch and log storm detector thread exceptions."""
+        try:
+            self.storm_detector.run()
+        except Exception as e:
+            self.logger.critical(f"Storm detector thread crashed: {e}", exc_info=True)
+            self.display.display_message("Storm detector error")
 
 
     def get_alert_color(self,severity, urgency):
@@ -173,11 +185,40 @@ class Alerter:
             return [255,255,255]
 
 
+def setup_logging():
+    """Configure logging to file and console."""
+    log_dir = os.path.dirname(os.path.abspath(__file__))
+    log_file = os.path.join(log_dir, 'weather_alerter.log')
+    
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        handlers=[
+            logging.FileHandler(log_file, mode='a'),
+            logging.StreamHandler(sys.stdout)
+        ]
+    )
+    
+    logger = logging.getLogger(__name__)
+    logger.info("="*60)
+    logger.info("Weather Alerter starting")
+    return logger
+
+
 if __name__ == "__main__":
-    display = DisplayFactory.create_display_automatically()
+    logger = setup_logging()
+    display = None
+    
     try:
+        display = DisplayFactory.create_display_automatically()
+        logger.info(f"Display initialized: {type(display).__name__}")
+        
         alerter = Alerter(display)
         alerter.run()
+    except KeyboardInterrupt:
+        logger.info("Shutdown requested by user")
     except Exception as e:
-        display.display_message(str(e))
-        raise
+        logger.critical(f"Fatal error: {e}", exc_info=True)
+        if display:
+            display.display_message("Fatal error - check logs")
+        sys.exit(1)
