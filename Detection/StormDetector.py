@@ -7,11 +7,12 @@ from Detection.PressureDatabase import PressureDatabase
 
 
 class StormDetector:
-    # Pressure drop threshold in millibars that indicates a potential storm
-    THREE_HOUR_PRESSURE_DROP_THRESHOLD = 3
-    ONE_HOUR_PRESSURE_DROP_THRESHOLD = 2
+    # Pressure drop thresholds in millibars that indicate a potential storm
+    # Real storms typically show 3-5+ mb/hour drops, not gradual changes
+    THREE_HOUR_PRESSURE_DROP_THRESHOLD = 6  # 2 mb/hour average
+    ONE_HOUR_PRESSURE_DROP_THRESHOLD = 3    # 3 mb/hour
     # Minimum number of readings required before we can detect a storm
-    MIN_READINGS_REQUIRED = 3
+    MIN_READINGS_REQUIRED = 10  # Need more data for reliable trend analysis
 
     def __init__(self, storm_detected_callback: Optional[Callable[[str], None]] = None, db_path: str = "pressure_readings.db"):
         """
@@ -81,13 +82,13 @@ class StormDetector:
 
     def _check_for_storm(self):
         """
-        Check for storm conditions based on pressure readings from the last hour.
-        A rapid drop in pressure can indicate an approaching storm.
+        Check for storm conditions based on pressure readings.
+        Detects both rapid pressure drops and accelerating pressure drops.
         """
         last_hour_readings = self._db.get_readings_last_hour()
         last_three_hour_readings = self._db.get_readings_last_three_hours()
 
-        # Need at least a few readings to detect a trend
+        # Need sufficient readings to detect a reliable trend
         if len(last_hour_readings) < self.MIN_READINGS_REQUIRED:
             return
         
@@ -98,7 +99,7 @@ class StormDetector:
         last_hour_readings.sort(key=lambda x: x[1])
         last_three_hour_readings.sort(key=lambda x: x[1])
 
-        # Check if there's been a significant drop in pressure
+        # Get pressure values
         one_hour_oldest_reading = last_hour_readings[0][0]
         three_hour_oldest_reading = last_three_hour_readings[0][0]
         newest_reading = last_hour_readings[-1][0]
@@ -106,25 +107,63 @@ class StormDetector:
         one_hour_pressure_change = newest_reading - one_hour_oldest_reading
         three_hour_pressure_change = newest_reading - three_hour_oldest_reading
 
-        # A significant drop in pressure may indicate a storm
-        if newest_reading < self._last_pressure: # only alert if pressure keeps dropping
-            if one_hour_pressure_change <= -self.ONE_HOUR_PRESSURE_DROP_THRESHOLD:
-                self.notify_storm(one_hour_pressure_change)
-            elif three_hour_pressure_change <= -self.THREE_HOUR_PRESSURE_DROP_THRESHOLD:
-                self.notify_storm(three_hour_pressure_change)
+        # Check for rapid pressure drops (indicating possible storm)
+        if one_hour_pressure_change <= -self.ONE_HOUR_PRESSURE_DROP_THRESHOLD:
+            self.notify_storm(one_hour_pressure_change, "1 hour")
+            self._last_pressure = newest_reading
+            return
+        
+        if three_hour_pressure_change <= -self.THREE_HOUR_PRESSURE_DROP_THRESHOLD:
+            # Also check if the drop is accelerating (recent drop faster than average)
+            if self._is_accelerating_drop(last_three_hour_readings):
+                self.notify_storm(three_hour_pressure_change, "3 hours (accelerating)")
+                self._last_pressure = newest_reading
+                return
+            
+            self.notify_storm(three_hour_pressure_change, "3 hours")
+        
         self._last_pressure = newest_reading
+    
+    def _is_accelerating_drop(self, readings: list) -> bool:
+        """
+        Check if pressure drop is accelerating (recent rate faster than overall rate).
+        This helps distinguish storms from gradual weather changes.
+        
+        Args:
+            readings: List of (pressure, timestamp) tuples sorted by timestamp
+            
+        Returns:
+            True if the pressure drop rate is accelerating
+        """
+        if len(readings) < 20:  # Need enough data points
+            return False
+        
+        # Compare first hour rate vs last hour rate
+        first_hour = readings[:len(readings)//3]
+        last_hour = readings[-len(readings)//3:]
+        
+        if len(first_hour) < 2 or len(last_hour) < 2:
+            return False
+        
+        # Calculate rate of change for each period
+        first_hour_rate = (first_hour[-1][0] - first_hour[0][0]) / len(first_hour)
+        last_hour_rate = (last_hour[-1][0] - last_hour[0][0]) / len(last_hour)
+        
+        # Accelerating if recent rate is at least 50% faster than early rate
+        return last_hour_rate < first_hour_rate * 1.5
 
-    def notify_storm(self, pressure_drop=None):
+    def notify_storm(self, pressure_drop=None, time_period="unknown"):
         """
         Notify about a detected storm.
 
         Args:
             pressure_drop: Optional pressure drop value to include in the message
+            time_period: Time period over which the drop occurred
         """
         if self._storm_detected_callback:
             message = "Storm detected."
             if pressure_drop is not None:
-                message += f" Pressure dropped by {abs(pressure_drop)} millibars in the last hour."
-            self.logger.warning(f"Storm detected: pressure drop = {pressure_drop}mb")
+                message += f" Pressure dropped by {abs(pressure_drop)} millibars over {time_period}."
+            self.logger.warning(f"Storm detected: pressure drop = {pressure_drop}mb over {time_period}")
             self._storm_detected_callback(message)
         
