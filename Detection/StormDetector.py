@@ -108,12 +108,12 @@ class StormDetector:
         three_hour_pressure_change = newest_reading - three_hour_oldest_reading
 
         # Check for rapid pressure drops (indicating possible storm)
-        if one_hour_pressure_change <= -self.ONE_HOUR_PRESSURE_DROP_THRESHOLD:
+        if one_hour_pressure_change < -self.ONE_HOUR_PRESSURE_DROP_THRESHOLD:
             self.notify_storm(one_hour_pressure_change, "1 hour")
             self._last_pressure = newest_reading
             return
         
-        if three_hour_pressure_change <= -self.THREE_HOUR_PRESSURE_DROP_THRESHOLD:
+        if three_hour_pressure_change < -self.THREE_HOUR_PRESSURE_DROP_THRESHOLD:
             # Also check if the drop is accelerating (recent drop faster than average)
             if self._is_accelerating_drop(last_three_hour_readings):
                 self.notify_storm(three_hour_pressure_change, "3 hours (accelerating)")
