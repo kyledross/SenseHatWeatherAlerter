@@ -1,4 +1,5 @@
 import logging
+import os
 from time import sleep
 from typing import Callable, Optional
 
@@ -19,6 +20,10 @@ class StormDetector:
             storm_detected_callback: Optional function that takes a string message parameter
             db_path: Path to the SQLite database file
         """
+        # Ensure the DB path is rooted at the project directory so it doesn't depend on cwd
+        if not os.path.isabs(db_path):
+            project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            db_path = os.path.join(project_root, db_path)
         self._storm_detected_callback = storm_detected_callback
         self._db = PressureDatabase(db_path)
         self._sense_hat = None
@@ -122,3 +127,4 @@ class StormDetector:
                 message += f" Pressure dropped by {abs(pressure_drop)} millibars in the last hour."
             self.logger.warning(f"Storm detected: pressure drop = {pressure_drop}mb")
             self._storm_detected_callback(message)
+        
