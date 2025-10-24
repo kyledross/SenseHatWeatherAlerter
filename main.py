@@ -5,7 +5,7 @@ import os.path
 import sys
 import threading
 import traceback
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 from time import sleep
 from typing import Optional
 
@@ -28,6 +28,7 @@ class WeatherAlert:
     expires: str
     description: str
     instruction: str
+    nws_headline: Optional[str] = None
 
 
 class Alerter:
@@ -134,8 +135,11 @@ class Alerter:
             if (data.get('severity') or '').upper() == 'UNKNOWN':
                 self.logger.info(f"Ignoring alert with UNKNOWN severity: {data.get('event', 'N/A')}")
                 return None
-                
-            return WeatherAlert(**data)
+            
+            # Filter data to only include fields defined in WeatherAlert
+            valid_fields = {f.name for f in fields(WeatherAlert)}
+            filtered_data = {k: v for k, v in data.items() if k in valid_fields}
+            return WeatherAlert(**filtered_data)
         except (requests.RequestException, ValueError) as e:
             self.logger.error(f"Error fetching weather alert: {e}", exc_info=True)
             self.display.display_message("Error getting weather data. Retrying in 30 seconds.")
