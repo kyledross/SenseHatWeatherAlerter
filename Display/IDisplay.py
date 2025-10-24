@@ -18,3 +18,8 @@ class IDisplay(ABC):
         """Set callback to be called when a button is pressed on the display device.
         Default implementation does nothing - override in subclasses with button support."""
         pass
+    
+    @property
+    def supports_long_message(self) -> bool:
+        """Returns True if the display can show long scrolling messages."""
+        return False

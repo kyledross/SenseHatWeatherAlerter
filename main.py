@@ -105,6 +105,14 @@ class Alerter:
             else:
                 pass
             self.display.display_message(title=alert_title, color=alert_color)
+            
+            # Show detailed nws_headline on on-demand checks if display supports it
+            if (self.on_demand_check_requested and 
+                weather_alert and 
+                weather_alert.nws_headline and 
+                self.display.supports_long_message):
+                self.display.display_message(title=weather_alert.nws_headline, color=alert_color)
+            
             self.on_demand_check_requested = False
         else:
             # No valid weather alert and no storm active

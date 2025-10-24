@@ -75,3 +75,8 @@ class SenseHatDisplay(IDisplay):
             except Exception as e:
                 self.logger.error(f"Error monitoring joystick: {e}", exc_info=True)
                 sleep(1)
+    
+    @property
+    def supports_long_message(self) -> bool:
+        """SenseHat supports scrolling long messages."""
+        return True
