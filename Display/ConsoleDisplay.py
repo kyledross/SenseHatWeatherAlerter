@@ -11,3 +11,8 @@ class ConsoleDisplay(IDisplay):
 
     def heartbeat(self):
         pass
+
+    @property
+    def supports_long_message(self) -> bool:
+        """Console can display arbitrarily long messages."""
+        return True
