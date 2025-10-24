@@ -5,6 +5,7 @@ from Display.IDisplay import IDisplay
 class DisplayType(Enum):
     ADAFRUIT_213_EINK = "adafruit_213_eink"
     SENSE_HAT = "sense_hat"
+    SENSE_HAT_EMULATOR = "sense_hat_emulator"
     CONSOLE = "console"
 
 class DisplayFactory:
@@ -16,6 +17,9 @@ class DisplayFactory:
         elif display_type == DisplayType.SENSE_HAT:
             from Display.SenseHatDisplay import SenseHatDisplay
             return SenseHatDisplay()
+        elif display_type == DisplayType.SENSE_HAT_EMULATOR:
+            from Display.SenseHatEmulatorDisplay import SenseHatEmulatorDisplay
+            return SenseHatEmulatorDisplay()
         elif display_type == DisplayType.CONSOLE:
             from Display.ConsoleDisplay import ConsoleDisplay
             return ConsoleDisplay()
@@ -30,6 +34,11 @@ class DisplayFactory:
             return display
         except Exception as e:
             logger.info(f"SenseHatDisplay not available: {e}")
+        try:
+            display = DisplayFactory.create_display(DisplayType.SENSE_HAT_EMULATOR)
+            return display
+        except Exception as e:
+            logger.info(f"SenseHatEmulatorDisplay not available: {e}")
         try:
             display = DisplayFactory.create_display(DisplayType.ADAFRUIT_213_EINK)
             return display

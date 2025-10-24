@@ -5,7 +5,7 @@ from typing import Callable, Optional
 
 from Display.IDisplay import IDisplay
 
-class SenseHatDisplay(IDisplay):
+class SenseHatEmulatorDisplay(IDisplay):
     sense = None
     def __init__(self):
         self.logger = logging.getLogger(__name__)
@@ -14,20 +14,17 @@ class SenseHatDisplay(IDisplay):
         self.stop_monitor = threading.Event()
         
         try:
-            # noinspection PyUnresolvedReferences
-            from sense_hat import SenseHat
+            from sense_emu import SenseHat
             self.sense = SenseHat()
         except Exception as e:
-            self.logger.debug(f"SenseHat hardware not found: {e}")
-            raise ValueError("SenseHat hardware not available")
+            self.logger.debug(f"SenseHat emulator not found: {e}")
+            raise ValueError("SenseHat emulator not available")
+            
         self.sense.low_light = True
-        self.sense.rotation = 90
+        self.sense.rotation = 0
         self.sense.clear()
 
     def display_message(self, title: str, message: str = "", detail: str = "", color=None):
-        # The SenseHat, being a scrolling display, will only display the title.
-        # It will then leave a full-stop on the display to let the user know that
-        # there is an active alert.
         show_full_stop = True
         if color is None:
             color = [255, 255, 255]
