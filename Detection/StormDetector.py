@@ -84,6 +84,7 @@ class StormDetector:
         """
         Check for storm conditions based on pressure readings.
         Detects both rapid pressure drops and accelerating pressure drops.
+        Only alerts if pressure is actively falling, not if it has stabilized.
         """
         last_hour_readings = self._db.get_readings_last_hour()
         last_three_hour_readings = self._db.get_readings_last_three_hours()
@@ -106,6 +107,17 @@ class StormDetector:
 
         one_hour_pressure_change = newest_reading - one_hour_oldest_reading
         three_hour_pressure_change = newest_reading - three_hour_oldest_reading
+
+        # Check if pressure has stabilized by comparing recent trend
+        # Look at last 15 minutes of readings to see if pressure stopped falling
+        recent_readings = [r for r in last_hour_readings if r[1] >= last_hour_readings[-1][1]]
+        if len(recent_readings) > 5:
+            recent_readings = last_hour_readings[-5:]
+            recent_pressure_change = recent_readings[-1][0] - recent_readings[0][0]
+            # If pressure has stabilized or risen in last 5 readings, don't alert
+            if recent_pressure_change >= -0.5:
+                self._last_pressure = newest_reading
+                return
 
         # Check for rapid pressure drops (indicating possible storm)
         if one_hour_pressure_change < -self.ONE_HOUR_PRESSURE_DROP_THRESHOLD:
