@@ -1,3 +1,3 @@
-http://argon.local:8081
-ga
-paulding county
+http://rpi02w.local:8080
+tn
+memphis
