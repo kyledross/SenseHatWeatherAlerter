@@ -9,8 +9,8 @@ from Detection.PressureDatabase import PressureDatabase
 class StormDetector:
     # Pressure drop thresholds in millibars that indicate a potential storm
     # Real storms typically show 3-5+ mb/hour drops, not gradual changes
-    THREE_HOUR_PRESSURE_DROP_THRESHOLD = 7  # ~2.3 mb/hour average
-    ONE_HOUR_PRESSURE_DROP_THRESHOLD = 4    # 4 mb/hour
+    THREE_HOUR_PRESSURE_DROP_THRESHOLD = 9  # ~3 mb/hour average
+    ONE_HOUR_PRESSURE_DROP_THRESHOLD = 5    # 5 mb/hour
     # Minimum number of readings required before we can detect a storm
     MIN_READINGS_REQUIRED = 10  # Need more data for reliable trend analysis
 
