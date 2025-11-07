@@ -1,3 +1,6 @@
 /.idea/
 weather_alerter.log*
 pressure_readings.db
+__pycache__/
+*.py[cod]
+*$py.class
