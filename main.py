@@ -24,7 +24,11 @@ class WeatherAlert:
     headline: str
     event: str
     severity: str
+    severity_score: Optional[int]
     urgency: str
+    urgency_score: Optional[int]
+    certainty: Optional[str]
+    certainty_score: Optional[int]
     expires: str
     description: str
     instruction: str
@@ -142,6 +146,11 @@ class Alerter:
             # Ignore alerts with "UNKNOWN" severity
             if (data.get('severity') or '').upper() == 'UNKNOWN':
                 self.logger.info(f"Ignoring alert with UNKNOWN severity: {data.get('event', 'N/A')}")
+                return None
+            
+            # Filter out alerts with urgency_score of 1
+            if data.get('urgency_score') == 1:
+                self.logger.info(f"Ignoring alert with urgency_score=1 (Future): {data.get('event', 'N/A')}")
                 return None
             
             # Filter data to only include fields defined in WeatherAlert
