@@ -1,5 +1,6 @@
 import logging
 import os
+import datetime
 from time import sleep
 from typing import Callable, Optional
 
@@ -110,29 +111,35 @@ class StormDetector:
 
         # Check if pressure has stabilized by comparing recent trend
         # Look at last 15 minutes of readings to see if pressure stopped falling
-        recent_readings = [r for r in last_hour_readings if r[1] >= last_hour_readings[-1][1]]
-        if len(recent_readings) > 5:
-            recent_readings = last_hour_readings[-5:]
+        fifteen_minutes_ago = last_hour_readings[-1][1] - datetime.timedelta(minutes=15)
+        recent_readings = [r for r in last_hour_readings if r[1] >= fifteen_minutes_ago]
+        if len(recent_readings) >= 5:
             recent_pressure_change = recent_readings[-1][0] - recent_readings[0][0]
-            # If pressure has stabilized or risen in last 5 readings, don't alert
+            # If pressure has stabilized or risen recently, don't alert
             if recent_pressure_change >= -0.5:
                 self._last_pressure = newest_reading
                 return
 
-        # Check for rapid pressure drops (indicating possible storm)
-        if one_hour_pressure_change < -self.ONE_HOUR_PRESSURE_DROP_THRESHOLD:
-            self.notify_storm(one_hour_pressure_change, "1 hour")
+        # If the most recent reading is not lower than the previous one, don't alert
+        if len(last_hour_readings) >= 2 and newest_reading >= last_hour_readings[-2][0]:
             self._last_pressure = newest_reading
             return
+
+        # Check for rapid pressure drops (indicating possible storm)
+        if one_hour_pressure_change < -self.ONE_HOUR_PRESSURE_DROP_THRESHOLD:
+            # Require acceleration for 1-hour alerts unless the drop is extreme
+            if self._is_accelerating_drop_hour(last_hour_readings) or one_hour_pressure_change <= -8:
+                self.notify_storm(one_hour_pressure_change, "1 hour")
+                self._last_pressure = newest_reading
+                return
         
         if three_hour_pressure_change < -self.THREE_HOUR_PRESSURE_DROP_THRESHOLD:
             # Also check if the drop is accelerating (recent drop faster than average)
-            if self._is_accelerating_drop(last_three_hour_readings):
-                self.notify_storm(three_hour_pressure_change, "3 hours (accelerating)")
+            if self._is_accelerating_drop(last_three_hour_readings) or three_hour_pressure_change <= -12:
+                label = "3 hours (accelerating)" if self._is_accelerating_drop(last_three_hour_readings) else "3 hours"
+                self.notify_storm(three_hour_pressure_change, label)
                 self._last_pressure = newest_reading
                 return
-            
-            self.notify_storm(three_hour_pressure_change, "3 hours")
         
         self._last_pressure = newest_reading
     
@@ -163,6 +170,33 @@ class StormDetector:
         
         # Accelerating if recent rate is at least 50% faster than early rate
         return last_hour_rate < first_hour_rate * 1.5
+
+    def _is_accelerating_drop_hour(self, readings: list) -> bool:
+        """
+        Check acceleration within roughly the last hour window by comparing the
+        first half vs the second half of the provided readings list.
+
+        Args:
+            readings: List of (pressure, timestamp) tuples sorted by timestamp
+
+        Returns:
+            True if the second-half drop rate is significantly faster (more negative)
+        """
+        if len(readings) < 10:
+            return False
+
+        mid = len(readings) // 2
+        first = readings[:mid]
+        second = readings[mid:]
+
+        if len(first) < 2 or len(second) < 2:
+            return False
+
+        first_rate = (first[-1][0] - first[0][0]) / len(first)
+        second_rate = (second[-1][0] - second[0][0]) / len(second)
+
+        # Consider accelerating if recent rate is at least 50% faster (more negative)
+        return second_rate < first_rate * 1.5
 
     def notify_storm(self, pressure_drop=None, time_period="unknown"):
         """
