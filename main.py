@@ -43,6 +43,7 @@ class Alerter:
     api_url:str = ""
     check_now_event: threading.Event = None
     on_demand_check_requested: bool = False
+    muted_alert_state: Optional[tuple] = None
 
     def is_storm_active(self) -> bool:
         if self.last_storm_callback is None:
@@ -62,6 +63,7 @@ class Alerter:
         self.storm_detector = None
         self.check_now_event = threading.Event()
         self.on_demand_check_requested = False
+        self.muted_alert_state = None
         self.display.set_button_press_callback(self._on_button_pressed)
         self.logger = logging.getLogger(__name__)
 
@@ -84,6 +86,7 @@ class Alerter:
                     self.display.display_message(f"Monitoring {self.city}, {self.state}")
                     self.display.clear_display()
                     self.last_config = read
+                    self.muted_alert_state = None
                 self.api_url = f"{self.weather_box_server}/weather-alert/{self.state}/{self.city}"
                 file.close()
             self.process_alerts()
@@ -108,6 +111,18 @@ class Alerter:
                 alert_title = weather_alert.event
             else:
                 pass
+
+            # Check if this alert is muted
+            current_state = ("STORM",) if alert_title == "Nearby Storm Detected" else ("NWS", weather_alert)
+            if not self.on_demand_check_requested and current_state == self.muted_alert_state:
+                self.logger.info(f"Skipping display of muted alert: {alert_title}")
+                return
+
+            if self.on_demand_check_requested:
+                self.muted_alert_state = current_state
+            else:
+                self.muted_alert_state = None
+
             self.display.display_message(title=alert_title, color=alert_color)
             
             # Show detailed nws_headline on on-demand checks if display supports it
@@ -120,6 +135,7 @@ class Alerter:
             self.on_demand_check_requested = False
         else:
             # No valid weather alert and no storm active
+            self.muted_alert_state = None
             if self.on_demand_check_requested:
                 self.logger.info("Displaying 'No current alerts' message for on-demand check")
                 self.display.display_message("No current alerts")
