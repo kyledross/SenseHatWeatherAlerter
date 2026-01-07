@@ -76,3 +76,6 @@ To schedule the alerter to start at boot:
 ```@reboot /home/yourusername/SenseHatWeatherAlerter/.venv/bin/python3 /home/yourusername/SenseHatWeatherAlerter/main.py```
 5. Save and exit
 6. Reboot
+
+## Checking the current alert and muting it
+When using the Raspberry Pi SenseHat, you can check the current alert and get more details by pressing the center joystick button.  This will also mute the current alert, though the colored indicator will remain illuminated for the duration of the alert.  You can press the button again at any time to get the details of the alert.
